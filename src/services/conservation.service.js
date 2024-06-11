@@ -261,7 +261,7 @@ class ConservationService {
   static getAllJoinedConservations = async ({ userId, query }) => {
     const page = query?.page || 1;
     const limit = query?.limit || 10;
-    console.log("ssss");
+
     const filter = {
       members: {
         $elemMatch: {
@@ -278,6 +278,10 @@ class ConservationService {
       .populate({
         path: "members.user",
         select: "userName email photo country interests industry gender isOnline",
+      })
+      .populate({
+        path: "lastMessage",
+        select: "_id type content sender",
       })
       .lean();
 

@@ -15,8 +15,8 @@ class Database {
 
   connect = (type = "mongodb") => {
     if (type === "mongodb") {
-      mongoose.set("debug", false);
-      mongoose.set("debug", { color: false });
+      // mongoose.set("debug", false);
+      // mongoose.set("debug", { color: false });
       mongoose
         .connect(CONNECTION_STRING, {
           maxPoolSize: 50,

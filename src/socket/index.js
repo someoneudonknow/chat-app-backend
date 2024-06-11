@@ -9,11 +9,10 @@ module.exports = (io) => {
 
     socketRoutes(socket);
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", function () {
       console.log(`A socket has disconected::${this.id}`);
     });
   }
 
   io.on("connection", onConnect);
-  io.engine.use(authentication);
 };

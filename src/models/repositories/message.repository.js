@@ -1,7 +1,8 @@
 "use strict";
 
+const { NotImplementedError } = require("../../core/error.response");
 const { convertStringToObjectId, selectDataQuery, unSelectDataQuery } = require("../../utils");
-const MessageModel = require("../message.model");
+const { MessageModel } = require("../message.model");
 
 class MessageRepository {
   static queryMessageWithUnselect = async ({

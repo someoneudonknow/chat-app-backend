@@ -9,7 +9,7 @@ const devConfig = {
     host: process.env.DEV_DB_HOST || "localhost",
     name: process.env.DEV_DB_NAME || "chat-app-dev",
   },
-  origin: process.env.DEV_ORIGIN_URL || "*",
+  origin: process.env.DEV_ORIGIN_URL || "http://localhost:5173",
   clientUrl: process.env.DEV_CLIENT_URL || "http://localhost:5173",
   cloudinary: {
     name: process.env.CLOUDINARY_NAME,

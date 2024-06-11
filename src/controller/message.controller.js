@@ -9,8 +9,7 @@ class MessageController {
       message: "Your message has been sent",
       metadata: await MessageService.createMessage({
         userId: req.user.userId,
-        conservationId: req.params.conservationId,
-        ...req.body,
+        body: req.body,
       }),
     }).send(res);
   };

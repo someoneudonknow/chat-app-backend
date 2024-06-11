@@ -69,7 +69,14 @@ class NotModifiedError extends ErrorResponse {
   }
 }
 
+class NotImplementedError extends ErrorResponse {
+  constructor(message = ReasonPhrases.NOT_IMPLEMENTED, statusCode = StatusCodes.NOT_IMPLEMENTED) {
+    super(message, statusCode);
+  }
+}
+
 module.exports = {
+  NotImplementedError,
   NotModifiedError,
   InternalServerError,
   RedisError,

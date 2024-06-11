@@ -11,6 +11,7 @@ class UploadController {
         folder: "user-uploads",
         files: req.files,
         userId: req.user.userId,
+        userOptions: req.body?.options || {},
       }),
     }).send(res);
   };
@@ -22,6 +23,7 @@ class UploadController {
         folder: "user-uploads",
         file: req.file,
         userId: req.user.userId,
+        userOptions: req.body?.options || {},
       }),
     }).send(res);
   };

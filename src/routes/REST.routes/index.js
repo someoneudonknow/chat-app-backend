@@ -20,7 +20,7 @@ router.use("/v1/api/themes", themeRouter);
 router.use("/v1/api/conservations", conservationRouter);
 router.use("/v1/api/contact-request", contactRouter);
 router.use("/v1/api/upload", uploadRouter);
-router.use("/v1/api/message", messageRouter);
+router.use("/v1/api/messages", messageRouter);
 router.use("/v1/api/industries", industryRouter);
 router.use("/v1/api/interests", interestRouter);
 
