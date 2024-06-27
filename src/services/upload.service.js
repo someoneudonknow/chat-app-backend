@@ -3,6 +3,7 @@
 const cloudinary = require("../cloudinary/cloudinary.init");
 const { v4: uuidv4 } = require("uuid");
 const { BadRequestError } = require("../core/error.response");
+const { pickDataInfoExcept } = require("../utils");
 
 const settings = {
   IMAGE_SETTING: {
@@ -64,6 +65,12 @@ class UploadService {
         originalName: result.original_filename,
         bytes: result.bytes,
         publicId: result.public_id,
+        additionalFields: {
+          ...pickDataInfoExcept(
+            ["type", "secure_url", "url", "original_filename", "bytes", "public_id"],
+            result
+          ),
+        },
       },
     };
   };
