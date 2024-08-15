@@ -71,14 +71,14 @@ const unSelectDataQuery = (unSelectedFields) => {
 };
 
 const filterDataWithQueryObj = async (query, queryObj) => {
-  const apiFilter = new APIFilter(query, queryObj).filter().paginate().sort().selectFields();
+  const apiFilter = new APIFilter({ query, queryObj }).filter().paginate().sort().selectFields();
 
   return await apiFilter.build();
 };
 
 const isObjectEmptyOrFalsy = (obj) => {
-  if (!obj || !_.isObject(obj) || _.isEmpty(obj)) return false;
-  return true;
+  if (!obj || !_.isObject(obj) || _.isEmpty(obj)) return true;
+  return false;
 };
 
 const replaceTemplateData = (templateString, data) => {

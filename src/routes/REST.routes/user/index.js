@@ -13,11 +13,11 @@ userRouter.get("/search/:keySearch", asyncHandler(UserController.searchUsers));
 
 userRouter.use(authentication);
 
+userRouter.get("/contacts", asyncHandler(UserController.filterUserContacts));
 userRouter.get("/recommended", asyncHandler(UserController.getContactRecommendations));
 userRouter.get("/contacts/:keySearch", asyncHandler(UserController.searchContacts));
 userRouter.get("/conservations/:keySearch", asyncHandler(UserController.searchConservations));
 userRouter.get("/discover/:userId", asyncHandler(UserController.discoverUser));
-userRouter.get("/contacts", asyncHandler(UserController.getMeContactInfo));
 userRouter.patch(
   "/profile/profileCompletion",
   asyncHandler(UserController.increaseProfileCompletionStep)

@@ -184,6 +184,7 @@ MessageFactory.registerMessage(messageTypes.VIDEO, VideoMessage);
 
 const eventNames = {
   NEW_MESSAGE: "messages/new",
+  CONSERVATION_UPDATE: "conservation/update",
 };
 
 class MessageService {
@@ -223,23 +224,33 @@ class MessageService {
     }
 
     const insertedMessage = await MessageFactory.createMessage(type, { ...body, sender: userId });
-    const returnResult = {
+
+    const newMessage = {
       ...insertedMessage.toObject(),
       sender: pickDataInfo(["photo", "userName", "email", "country", "_id"], foundUser.toObject()),
     };
 
-   await ConservationRepository.updateConservationById({
+    await ConservationRepository.updateConservationById({
       conservationId: insertedMessage.conservation.toString(),
       updatedPart: {
-        lastMessage: insertedMessage._id
-      }
+        lastMessage: insertedMessage._id,
+      },
     });
 
-    global._io
-      .to(insertedMessage.conservation.toString())
-      .emit(eventNames.NEW_MESSAGE, returnResult);
+    global._io.to(insertedMessage.conservation.toString()).emit(eventNames.NEW_MESSAGE, newMessage);
 
-    return returnResult;
+    convervationFound.members
+      .map((m) => m.user.toString())
+      .forEach((uid) => {
+        global._io.to(uid).emit(eventNames.CONSERVATION_UPDATE, [
+          {
+            _id: insertedMessage.conservation.toString(),
+            updated: { lastMessage: insertedMessage.toObject() },
+          },
+        ]);
+      });
+
+    return newMessage;
   };
 
   static searchMessages = async ({ keySearch }) => {
@@ -274,6 +285,50 @@ class MessageService {
 
   static hardDelete = async (messageId) => {
     return await MessageModel.findByIdAndDelete(messageId);
+  };
+
+  static getAttachmentMessages = async ({ conservationId, limit = 20, nextCursor, type }) => {
+    const allowedTypes = ["file", "image", "audio", "video"];
+
+    if (!allowedTypes.includes(type)) throw new BadRequestError("Invalid attachment's type");
+
+    let result = [];
+    let hasNext = false,
+      next = null;
+    const query = { conservation: convertStringToObjectId(conservationId), type };
+
+    if (!nextCursor) {
+      result = await MessageModel.find(query).limit(limit).sort({ createdAt: -1 }).lean();
+    } else {
+      const [createdAt, id] = nextCursor.split("_");
+
+      if (!createdAt || !id) throw new BadRequestError("Invalid cursor");
+
+      result = await MessageModel.find({
+        ...query,
+        $or: [
+          {
+            createdAt: { $lt: new Date(createdAt) },
+          },
+          { createdAt: new Date(createdAt), _id: { $lt: id } },
+        ],
+      })
+        .limit(limit)
+        .sort({ createdAt: -1 });
+    }
+
+    if (result.length > 0) {
+      const lastItem = result[result.length - 1];
+
+      hasNext = !!(await MessageModel.findOne({ ...query, _id: { $lt: lastItem._id } }).lean());
+
+      if (hasNext) next = `${lastItem.createdAt.toISOString()}_${lastItem._id}`;
+    }
+    return {
+      list: result,
+      next,
+      hasNext,
+    };
   };
 
   // cursor base pagination implement
@@ -375,10 +430,6 @@ class MessageService {
         expiredAt: new Date(expiredAt),
       },
     });
-  };
-
-  static getAllAttachmentsInConservation = async ({ conservationId }) => {
-    return [];
   };
 
   static updateMessage = async ({ messageId, userId, bodyUpdate }) => {

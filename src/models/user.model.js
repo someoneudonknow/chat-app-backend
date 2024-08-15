@@ -103,6 +103,10 @@ const UserSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isCalling: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

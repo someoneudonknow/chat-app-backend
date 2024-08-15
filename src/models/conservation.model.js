@@ -54,6 +54,10 @@ const ConservationSchema = new mongoose.Schema(
       ref: "Message",
       default: null,
     },
+    isCalling: {
+      type: Boolean,
+      default: false,
+    },
     conservationAttributes: {},
   },
   {

@@ -10,6 +10,7 @@ const GroupSchema = new mongoose.Schema(
     groupName: {
       type: String,
       required: [true, "Group's name must be provided"],
+      unique: true,
       index: true,
     },
     groupAvatar: String,
@@ -19,7 +20,7 @@ const GroupSchema = new mongoose.Schema(
     },
     memberLimit: {
       type: Number,
-      min: [1, "memberLimit cannot be lower than 1"],
+      min: [3, "memberLimit cannot be lower than 1"],
       default: 100,
     },
     isPublished: {

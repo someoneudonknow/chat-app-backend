@@ -11,6 +11,7 @@ const uploadRouter = require("./upload");
 const userRouter = require("./user");
 const industryRouter = require("./industry");
 const interestRouter = require("./interest");
+const callRouter = require("./call");
 
 const router = express.Router();
 
@@ -23,5 +24,6 @@ router.use("/v1/api/upload", uploadRouter);
 router.use("/v1/api/messages", messageRouter);
 router.use("/v1/api/industries", industryRouter);
 router.use("/v1/api/interests", interestRouter);
+router.use("/v1/api/calls", callRouter);
 
 module.exports = router;

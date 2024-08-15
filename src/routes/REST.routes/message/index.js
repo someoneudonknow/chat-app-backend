@@ -15,6 +15,10 @@ messageRouter.get(
   "/conservations/:conservationId",
   asyncHandler(MessageController.getAllMessageInConservation)
 );
+messageRouter.get(
+  "/conservations/:conservationId/attachments",
+  asyncHandler(MessageController.getAttachmentMessages)
+);
 messageRouter.post("", asyncHandler(MessageController.sendMessage));
 messageRouter.delete("/soft/:messageId", asyncHandler(MessageController.softDeleteMessage));
 messageRouter.delete("/hard/:messageId", asyncHandler(MessageController.hardDeleteMessage));

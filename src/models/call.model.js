@@ -7,18 +7,22 @@ const DOCUMENT_NAME = "Call";
 
 const callSchema = new mongoose.Schema(
   {
-    creator: {
+    caller: {
       type: mongoose.Types.ObjectId,
       ref: "User",
       required: true,
     },
+    mediaType: {
+      type: String,
+      enum: { values: ["AUDIO_CALL", "VIDEO_CALL"] },
+    },
     type: {
       type: String,
-      enum: { values: ["DIRECT_CALL", "GROUP_CALL"] },
+      enum: { values: ["GROUP", "ONE_TO_ONE"] },
     },
-    joinedMembers: [
+    attendances: [
       {
-        type: mongoose.Types.Array,
+        type: mongoose.Types.ObjectId,
         ref: "User",
       },
     ],
@@ -33,6 +37,16 @@ const callSchema = new mongoose.Schema(
     },
     endAt: {
       type: Date,
+    },
+    callEnder: {
+      type: mongoose.Types.ObjectId,
+      ref: "User",
+    },
+    status: {
+      type: String,
+      enum: {
+        values: ["INIT", "PENDING", "ENDED"],
+      },
     },
   },
   {

@@ -1,18 +1,21 @@
 "use strict";
 
 const { authentication } = require("../auth/auth.middlewares");
+const SocketController = require("../controller/socket.controller");
 const socketRoutes = require("../routes/socket.routes");
+const { middlewareWrapper, socketErrorHandler } = require("./socket.utils");
 
 module.exports = (io) => {
-  function onConnect(socket) {
-    console.log(`A socket has been established::${socket.id}`);
+  async function onConnect(socket) {
+    await SocketController.initializeUser.call(socket);
 
     socketRoutes(socket);
 
-    socket.on("disconnect", function () {
-      console.log(`A socket has disconected::${this.id}`);
-    });
+    socket.on(
+      "disconnect",
+      socketErrorHandler.call(socket, SocketController.handleUserDisconnected)
+    );
   }
 
-  io.on("connection", onConnect);
+  io.use(middlewareWrapper(authentication)).on("connection", onConnect);
 };

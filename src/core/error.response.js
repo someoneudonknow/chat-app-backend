@@ -75,8 +75,15 @@ class NotImplementedError extends ErrorResponse {
   }
 }
 
+class GoneError extends ErrorResponse {
+  constructor(message = ReasonPhrases.GONE, statusCode = StatusCodes.GONE) {
+    super(message, statusCode);
+  }
+}
+
 module.exports = {
   NotImplementedError,
+  GoneError,
   NotModifiedError,
   InternalServerError,
   RedisError,

@@ -24,6 +24,7 @@ const { createOTP, verifyOTP } = require("./otp.service");
 const verifyEmailTemplate = require("../templates/verifyEmail.template");
 const InterestModel = require("../models/interest.model");
 const ConservationModel = require("../models/conservation.model");
+const APIFilter = require("../utils/APIFilter");
 
 class UserService {
   static searchUserConservations = async ({ keyword, userId, query }) => {
@@ -155,7 +156,7 @@ class UserService {
       ConservationModel.aggregate(aggregateConservations),
       ConservationModel.aggregate(aggregateCnt),
     ]);
-    console.log({ userConservations, docCount });
+
     return {
       list: userConservations,
       totalPages: docCount?.[0]?.totalPages || 0,
@@ -214,6 +215,51 @@ class UserService {
     };
   };
 
+  static filterContacts = async ({ userId, query }) => {
+    const limit = query?.limit || 10;
+
+    const foundUser = await UserRepository.getUserById(userId);
+    if (!foundUser) throw new BadRequestError("You're not registered !");
+
+    const userContacts = foundUser.contactList;
+    if (!userContacts.length === 0) return [];
+
+    const apiFilter = new APIFilter({
+      queryObj: UserModel.find({ _id: { $in: userContacts }, isDeleted: false }),
+      query,
+    })
+      .filter()
+      .paginate()
+      .sort()
+      .selectFields();
+
+    const totalDocs = await apiFilter.count();
+    const list = await apiFilter.build();
+
+    return {
+      list: list.map((u) =>
+        pickDataInfoExcept(
+          [
+            "password",
+            "status",
+            "contactList",
+            "blockedList",
+            "joinedConservations",
+            "lastCompletedUserProfileStep",
+            "loginMethod",
+            "role",
+            "isDeleted",
+            "createdAt",
+            "updatedAt",
+            "__v",
+          ],
+          u
+        )
+      ),
+      totalPages: Math.ceil(totalDocs / limit),
+    };
+  };
+
   static getMeContactInfo = async ({ userId, query }) => {
     const limit = parseInt(query.limit) || 10;
     const page = parseInt(query.page) || 1;
@@ -241,6 +287,7 @@ class UserService {
             "contactList",
             "blockedList",
             "joinedConservations",
+            "lastCompletedUserProfileStep",
             "loginMethod",
             "role",
             "isDeleted",

@@ -16,6 +16,10 @@ const devConfig = {
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
   },
+  agora: {
+    app_id: process.env.AGORA_APP_ID,
+    app_cerf: process.env.AGORA_APP_CERF,
+  },
   mail: {
     service: process.env.DEV_MAIL_SERVICE || "mail",
     user: process.env.DEV_MAIL_USER || "",
@@ -49,6 +53,10 @@ const prodConfig = {
     service: process.env.PROD_MAIL_SERVICE || "mail",
     user: process.env.PROD_MAIL_USER || "",
     pass: process.env.PROD_MAIL_PASS || "",
+  },
+  agora: {
+    app_id: process.env.AGORA_APP_ID,
+    app_cerf: process.env.AGORA_APP_CERF,
   },
   redis: {
     port: process.env.PROD_REDIS_PORT || 6379,

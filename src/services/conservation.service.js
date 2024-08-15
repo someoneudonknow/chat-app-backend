@@ -56,6 +56,7 @@ class Group extends Conservation {
     });
 
     const newConservation = await super.create();
+
     if (!newConservation) throw new BadRequestError("Error while creating new conservation");
 
     return newConservation;
@@ -91,25 +92,25 @@ class Inbox extends Conservation {
 }
 
 class ConservationFactory {
-  static conservationTypeSubscriber = {};
+  static conservationTypeRegister = {};
 
-  static subscribe(type, classReference) {
-    ConservationFactory.conservationTypeSubscriber[type] = classReference;
+  static register(type, classReference) {
+    ConservationFactory.conservationTypeRegister[type] = classReference;
   }
 
   static async create(type, payload) {
-    const ConservationClass = ConservationFactory.conservationTypeSubscriber[type];
+    const ConservationClass = ConservationFactory.conservationTypeRegister[type];
 
-    if (!ConservationFactory.conservationTypeSubscriber[type])
+    if (!ConservationFactory.conservationTypeRegister[type])
       throw new BadRequestError("Conservation type is not available");
 
     return new ConservationClass(payload).create();
   }
 }
 
-ConservationFactory.subscribe(ConservationType.GROUP, Group);
-ConservationFactory.subscribe(ConservationType.INBOX, Inbox);
-ConservationFactory.subscribe(ConservationType.DIRECT_MESSAGE, Inbox);
+ConservationFactory.register(ConservationType.GROUP, Group);
+ConservationFactory.register(ConservationType.INBOX, Inbox);
+ConservationFactory.register(ConservationType.DIRECT_MESSAGE, Inbox);
 
 class ConservationService {
   static getConservationById = async ({ conservationId }) => {
@@ -141,13 +142,19 @@ class ConservationService {
   static createConservation = async (type, payload) => {
     const newConservation = await ConservationFactory.create(type, payload);
 
-    const updateUser = await UserModel.findByIdAndUpdate(payload.creator, {
-      $addToSet: {
-        joinedConservations: newConservation._id,
-      },
-    });
+    const results = await Promise.all(
+      newConservation.members.map(async (c) => {
+        const updateUser = await UserModel.findByIdAndUpdate(c.user.toString(), {
+          $addToSet: {
+            joinedConservations: newConservation._id,
+          },
+        });
 
-    if (!updateUser) throw new BadRequestError("There was an error please try again later");
+        return updateUser;
+      })
+    );
+
+    if (!results) throw new BadRequestError("There was an error please try again later");
 
     return newConservation;
   };
@@ -281,7 +288,12 @@ class ConservationService {
       })
       .populate({
         path: "lastMessage",
-        select: "_id type content sender",
+        select: "_id type content sender createdAt",
+        options: {
+          sort: {
+            createdAt: 1,
+          },
+        },
       })
       .lean();
 

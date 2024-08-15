@@ -1,12 +1,12 @@
 "use strict";
 
 class APIFilter {
-  constructor(queryObj, query) {
+  constructor({ queryObj, query }) {
     this.queryObj = queryObj;
     this.query = query;
   }
 
-  filter() {
+  #getFilterObj() {
     const clonedQuery = { ...this.query };
     const excludedFields = ["page", "sort", "limit", "fields"];
 
@@ -16,10 +16,14 @@ class APIFilter {
       /\b(gte|gt|lte|lt)\b/g,
       (match) => `$${match}`
     );
+
     const filterObj = JSON.parse(queryString);
 
-    this.queryObj = this.queryObj.find(filterObj);
+    return filterObj;
+  }
 
+  filter() {
+    this.queryObj = this.queryObj.find(this.#getFilterObj());
     return this;
   }
 
@@ -54,6 +58,10 @@ class APIFilter {
     }
 
     return this;
+  }
+
+  async count() {
+    return await this.queryObj.model.countDocuments(this.#getFilterObj());
   }
 
   async build() {

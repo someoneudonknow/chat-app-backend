@@ -67,6 +67,16 @@ class MessageController {
       }),
     }).send(res);
   };
+
+  getAttachmentMessages = async (req, res, next) => {
+    new SuccessResponse({
+      message: "Update messages successfully",
+      metadata: await MessageService.getAttachmentMessages({
+        conservationId: req.params.conservationId,
+        ...req.query,
+      }),
+    }).send(res);
+  };
 }
 
 module.exports = new MessageController();

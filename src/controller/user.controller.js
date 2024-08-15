@@ -4,6 +4,16 @@ const { Created, SuccessResponse } = require("../core/success.response");
 const UserService = require("../services/user.service");
 
 class UserController {
+  filterUserContacts = async (req, res, next) => {
+    new SuccessResponse({
+      message: "Get convervations info successfully",
+      metadata: await UserService.filterContacts({
+        userId: req.user.userId,
+        query: req.query,
+      }),
+    }).send(res);
+  };
+
   searchConservations = async (req, res, next) => {
     new SuccessResponse({
       message: "Get convervations info successfully",
