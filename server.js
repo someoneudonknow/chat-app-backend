@@ -1,10 +1,10 @@
 "use strict";
 
-// process.on("uncaughtException", (e) => {
-//   console.log("Uncaught exception::" + e);
-//   console.log("Process is exiting");
-//   process.exit(1);
-// });
+process.on("uncaughtException", (e) => {
+  console.log("Uncaught exception::" + e);
+  console.log("Process is exiting");
+  process.exit(1);
+});
 
 const http = require("http");
 const app = require("./src/app");
@@ -30,21 +30,21 @@ require("./src/socket/index")(io);
 
 global._io = io;
 
-// process.on("unhandledRejection", (e) => {
-//   console.log("Unhandled rejection::" + e);
-//   console.log("Server is shutting down");
+process.on("unhandledRejection", (e) => {
+  console.log("Unhandled rejection::" + e);
+  console.log("Server is shutting down");
 
-//   serverInstance.close(() => {
-//     process.exit(1);
-//   });
-// });
+  serverInstance.close(() => {
+    process.exit(1);
+  });
+});
 
-// process.on("SIGINT", () => {
-//   console.log("Ctrl c deteted app is closing");
+process.on("SIGINT", () => {
+  console.log("Ctrl c deteted app is closing");
 
-//   serverInstance.close(() => {
-//     console.log("Server closed");
-//   });
-// });
+  serverInstance.close(() => {
+    console.log("Server closed");
+  });
+});
 
 module.exports = server;

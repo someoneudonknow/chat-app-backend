@@ -8,6 +8,7 @@ const {
   compareObjIdAndStr,
   deepCleanObject,
   pickDataInfo,
+  mongodbQueryConverter,
 } = require("../utils/index");
 const {
   MessageModel,
@@ -19,6 +20,7 @@ const {
   VideoMessageModel,
 } = require("../models/message.model");
 const UserRepository = require("../models/repositories/user.repository");
+const { Types } = require("mongoose");
 /*
  1- get all message from conservation --done
  2- search for messages --done
@@ -287,15 +289,32 @@ class MessageService {
     return await MessageModel.findByIdAndDelete(messageId);
   };
 
-  static getAttachmentMessages = async ({ conservationId, limit = 20, nextCursor, type }) => {
-    const allowedTypes = ["file", "image", "audio", "video"];
+  static getAttachmentMessages = async ({
+    conservationId,
+    limit = 10,
+    nextCursor,
+    type,
+    ...queryObj
+  }) => {
+    const allowedTypes = ["file", "image", "video"];
 
     if (!allowedTypes.includes(type)) throw new BadRequestError("Invalid attachment's type");
 
     let result = [];
     let hasNext = false,
       next = null;
-    const query = { conservation: convertStringToObjectId(conservationId), type };
+
+    const query = {
+      conservation: convertStringToObjectId(conservationId),
+      type,
+      ...mongodbQueryConverter(queryObj, {
+        typeCasters: {
+          createdAt: (v) => new Date(v),
+          _id: (v) => convertStringToObjectId(v),
+        },
+        excludedFields: ["isDeleted", "sort", "limit", "fields"],
+      }),
+    };
 
     if (!nextCursor) {
       result = await MessageModel.find(query).limit(limit).sort({ createdAt: -1 }).lean();

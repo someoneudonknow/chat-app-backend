@@ -98,6 +98,37 @@ const removeDuplicates = (data) => {
   return _.uniq(data);
 };
 
+const mongodbQueryConverter = (queryObj, options) => {
+  const cloned = { ...queryObj };
+  const excludedFields = options?.excludedFields || ["sort", "limit", "fields"];
+  const operators = options?.allowedOperators || ["gte", "gt", "lte", "lt"];
+
+  excludedFields.map((exfield) => delete cloned[exfield]);
+
+  if (options?.typeCasters) {
+    const iter = (o, parentKey) => {
+      const keys = Object.keys(o);
+
+      keys.forEach((k) => {
+        if (operators.includes(k) && parentKey !== undefined) {
+          if (options.typeCasters?.[parentKey]) {
+            o[`$${k}`] = options.typeCasters[parentKey](o[k]);
+            delete o[k];
+          }
+        } else if (Object.keys(options.typeCasters).includes(k) && typeof o[k] !== "object") {
+          o[k] = options.typeCasters[k](o[k]);
+        } else if (typeof o[k] === "object" && !Array.isArray(o[k])) {
+          iter(o[k], k);
+        }
+      });
+    };
+
+    iter(cloned);
+  }
+
+  return cloned;
+};
+
 module.exports = {
   removeDuplicates,
   removeDuplicatesWith,
@@ -112,4 +143,5 @@ module.exports = {
   deepCleanObject,
   flattenObject,
   compareObjIdAndStr,
+  mongodbQueryConverter,
 };
