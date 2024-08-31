@@ -44,6 +44,10 @@ const sRem = async (key, data) => {
   return await client.sRem(key, data);
 };
 
+const sMembers = async (key) => {
+  return await client.sMembers(key);
+};
+
 module.exports = {
   sAdd,
   sRem,
@@ -54,4 +58,5 @@ module.exports = {
   set,
   get,
   hDel,
+  sMembers,
 };

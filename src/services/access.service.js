@@ -21,15 +21,6 @@ class AccessService {
     if (!refreshToken) throw new BadRequestError("Please provide a refresh token");
 
     const { userId, email } = user;
-    /**
-     * 1) check if the token has been refreshed
-     * 2) if yes, delete all the token to force the user to login again
-     * 3) if no, find the token in the db if not found return error
-     * 4) verify the token and with the found token private key if
-     * 5) find user by verified email, if not found return error
-     * 6) create a new token pair and update it to the database
-     * 7) if update is successful return token pair
-     */
 
     if (storedKey.refreshTokenUsed.includes(refreshToken)) {
       await KeyTokenService.deleteByUserId(userId);

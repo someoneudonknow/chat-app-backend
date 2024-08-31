@@ -4,7 +4,7 @@ const { BadRequestError } = require("../core/error.response");
 const CallRepository = require("../models/repositories/call.repository");
 const ConservationRepository = require("../models/repositories/conservation.repository");
 const UserRepository = require("../models/repositories/user.repository");
-const { hSet, hGetAll, createKey } = require("./redis.service");
+const { hSet, hGetAll, createKey, sRem, sMembers, sAdd } = require("./redis.service");
 
 const eventName = {
   ONLINE_USER: "users/online-user",
@@ -15,6 +15,7 @@ const eventName = {
   CALL_REJECTED: "calls/users/rejected",
   CALLEE_LEFT: "calls/users/left",
   CALLEE_JOINED: "calls/users/joined",
+  CALLEES_CHANGED: "calls/callees-changed",
 };
 
 class SocketService {
@@ -68,35 +69,40 @@ class SocketService {
   };
 
   static setUpCall = async function ({ callId, user }) {
-    if (callId) {
-      this.join(callId);
-    }
+    if (!callId) throw new Error("Call id is required");
 
-    if (user) {
-      this.to(callId).emit(eventName.CALLEE_JOINED, user);
-    }
+    if (!user) throw new Error("User is required");
+
+    this.join(callId);
+    this.to(callId).emit(eventName.CALLEE_JOINED, user);
+
+    await sAdd(createKey({ modelName: "calls", id: callId }), user.id);
+
+    await SocketService.emitCalleesChanged.call(this, callId);
   };
 
   static onLeaveCall = async function ({ callId, user }) {
-    if (callId) {
-      this.leave(callId);
-    }
+    if (!callId) throw new Error("Call id is required");
+    if (!user) throw new Error("User is required");
 
-    if (user) {
-      this.to(callId).emit(eventName.CALLEE_LEFT, user);
-    }
+    this.leave(callId);
+    this.to(callId).emit(eventName.CALLEE_LEFT, user);
+
+    await sRem(createKey({ modelName: "calls", id: callId }), user.id);
+
+    await SocketService.emitCalleesChanged.call(this, callId);
+  };
+
+  static emitCalleesChanged = async function (callId) {
+    const callees = await sMembers(createKey({ modelName: "calls", id: callId }));
+
+    global._io.in(callId).emit(eventName.CALLEES_CHANGED, callees);
   };
 
   static onCallRejected = async function ({ callId, user }) {
     const foundCall = await CallRepository.getById(callId);
 
     if (!foundCall) throw new BadRequestError("Invalid call");
-
-    const pendingCallKey = createKey({ modelName: "calls", id: callId });
-
-    await hSet(pendingCallKey, {
-      [user._id]: "REJECTED",
-    });
 
     const userData = {
       name: user?.userName || user.email,

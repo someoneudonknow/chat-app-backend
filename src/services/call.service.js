@@ -14,7 +14,7 @@ const UserRepository = require("../models/repositories/user.repository");
 const { v4: uuid } = require("uuid");
 const CallRepository = require("../models/repositories/call.repository");
 const AgoraService = require("./agora.service");
-const { createKey, hSet, del } = require("./redis.service");
+const { createKey, hSet, del, sAdd } = require("./redis.service");
 const { RtcRole } = require("agora-token");
 
 const callStatus = {
@@ -71,18 +71,12 @@ class CallService {
       expiredTimestampInSeconds: 3600,
     });
 
-    const pendingCallKey = createKey({ modelName: "calls", id: createdCall._id.toString() });
-
-    await hSet(pendingCallKey, {
-      [callerId]: "ACCEPTED",
+    await ConservationRepository.updateConservationById({
+      conservationId: conservationId,
+      updatedPart: { isCalling: true },
     });
 
-    // await ConservationRepository.updateConservationById({
-    //   conservationId: conservationId,
-    //   updatedPart: { isCalling: true },
-    // });
-
-    // await UserRepository.updateUserById({ userId: callerId, update: { isCalling: true } });
+    await UserRepository.updateUserById({ userId: callerId, update: { isCalling: true } });
 
     return {
       call: createdCall,
@@ -132,13 +126,8 @@ class CallService {
       expiredTimestampInSeconds: 3600,
     });
 
-    const pendingCallKey = createKey({ modelName: "calls", id: callId });
+    await UserRepository.updateUserById({ userId: joinerId, update: { isCalling: true } });
 
-    await hSet(pendingCallKey, {
-      [joinerId]: "ACCEPTED",
-    });
-
-    // await UserRepository.updateUserById({ userId: joinerId, update: { isCalling: true } });
     return {
       call: updatedCall,
       channel: channelName,
@@ -162,7 +151,7 @@ class CallService {
 
   static endCall = async ({ ender, callId }) => {
     const foundCall = await CallModel.findById(callId);
-
+    console.log("check");
     if (!foundCall) throw new BadRequestError("Call not exists");
 
     if (foundCall.status === callStatus.ENDED) throw new GoneError("Call has ended");
@@ -186,7 +175,7 @@ class CallService {
       updatedPart: { isCalling: false },
     });
 
-    await del(callId);
+    await del(createKey({ modelName: "calls", id: callId }));
 
     return updatedCall;
   };

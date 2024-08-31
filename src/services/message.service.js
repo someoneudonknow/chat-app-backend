@@ -77,10 +77,10 @@ class TextMessage extends Message {
       ...this.content,
       sender: this.sender,
     });
-    if (!textMessageCreated) throw new InternalError("Something went while creating");
+    if (!textMessageCreated) throw new InternalError("Something went wrong while creating");
 
     const createdMessage = await super.createMessage(textMessageCreated._id);
-    if (!createdMessage) throw new InternalError("Something went while creating");
+    if (!createdMessage) throw new InternalError("Something went wrong while creating");
 
     return createdMessage;
   }
@@ -92,10 +92,10 @@ class GifMessage extends Message {
       ...this.content,
       sender: this.sender,
     });
-    if (!createdGifMessage) throw new InternalError("Something went while creating");
+    if (!createdGifMessage) throw new InternalError("Something went wrong while creating");
 
     const createdMessage = await super.createMessage(createdGifMessage._id);
-    if (!createdMessage) throw new InternalError("Something went while creating");
+    if (!createdMessage) throw new InternalError("Something went wrong while creating");
 
     return createdMessage;
   }
@@ -107,7 +107,7 @@ class FileMessage extends Message {
       ...this.content,
       sender: this.sender,
     });
-    if (!createdFileMessage) throw new InternalError("Something went while creating");
+    if (!createdFileMessage) throw new InternalError("Something went wrong while creating");
 
     const createdMessage = await super.createMessage(createdFileMessage._id);
     if (!createdMessage) throw new InternalError("Something went wrong while creating");
@@ -122,7 +122,7 @@ class ImageMessage extends Message {
       ...this.content,
       sender: this.sender,
     });
-    if (!createdImageMessage) throw new InternalError("Something went while creating");
+    if (!createdImageMessage) throw new InternalError("Something went wrong while creating");
 
     const createdMessage = await super.createMessage(createdImageMessage._id);
     if (!createdMessage) throw new InternalError("Something went wrong while creating");
@@ -137,7 +137,7 @@ class AudioMessage extends Message {
       ...this.content,
       sender: this.sender,
     });
-    if (!createdAudioMessage) throw new InternalError("Something went while creating");
+    if (!createdAudioMessage) throw new InternalError("Something went wrong while creating");
 
     const createdMessage = await super.createMessage(createdAudioMessage._id);
     if (!createdMessage) throw new InternalError("Something went wrong while creating");
@@ -152,7 +152,7 @@ class VideoMessage extends Message {
       ...this.content,
       sender: this.sender,
     });
-    if (!createdVideoMessage) throw new InternalError("Something went while creating");
+    if (!createdVideoMessage) throw new InternalError("Something went wrong while creating");
 
     const createdMessage = await super.createMessage(createdVideoMessage._id);
     if (!createdMessage) throw new InternalError("Something went wrong while creating");
