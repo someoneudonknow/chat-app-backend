@@ -65,8 +65,8 @@ class AccessService {
     const userFound = await UserService.findByEmail(email);
 
     if (!userFound) throw new BadRequestError("User is not registered");
-    const isPasswordTrue = await bcrypt.compare(password, userFound.password);
 
+    const isPasswordTrue = await bcrypt.compare(password, userFound.password);
     if (!isPasswordTrue) throw new AuthFailureError("Authentication failed");
 
     const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
@@ -80,6 +80,8 @@ class AccessService {
         format: "pem",
       },
     });
+
+    console.log('check')
 
     const createdTokens = await createTokenPair(
       {

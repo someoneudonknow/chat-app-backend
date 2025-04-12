@@ -9,8 +9,8 @@ const settings = {
   IMAGE_SETTING: {
     resource_type: "image",
     transformation: [
-      { width: 800, crop: "scale" }, // Resize the image to 800
-      { quality: "auto" }, // Automatically determine the optimal quality
+      { width: 800, crop: "scale" }, 
+      { quality: "auto" },
       { fetch_format: "auto" },
     ],
   },
@@ -18,8 +18,8 @@ const settings = {
     resource_type: "video",
     quality: 50,
     transformation: [
-      { width: 500, crop: "scale" }, // Resize the image to 800
-      { quality: "auto" }, // Automatically determine the optimal quality
+      { width: 500, crop: "scale" }, 
+      { quality: "auto" }, 
       { fetch_format: "auto" },
     ],
   },
