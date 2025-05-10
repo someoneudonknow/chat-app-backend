@@ -21,11 +21,33 @@ const io = require("socket.io")(server, {
   debug: true,
 });
 
+const ConservationAssistant = require("./src/services/aiAssistant/conservation.assistant");
+
+const EventEmitter = require("events");
+const internalEvents = new EventEmitter();
+internalEvents.setMaxListeners(50);
+
+internalEvents.on("process:ai:message", async (data) => {
+  try {
+    const { message, conservationId } = data;
+    console.log("Processing AI message for conservation:", conservationId);
+
+    const aiResponse = await ConservationAssistant.processMessage(message, conservationId);
+
+    if (aiResponse) {
+      console.log("AI Assistant responded to message:", aiResponse._id);
+    }
+  } catch (error) {
+    console.error("Error processing AI message:", error);
+  }
+});
+
+global._internalEvents = internalEvents;
+
 const serverInstance = server.listen(port, () => {
   console.log("App start with port::" + port);
 });
 
-// init socket server events listeners
 require("./src/socket/index")(io);
 
 global._io = io;

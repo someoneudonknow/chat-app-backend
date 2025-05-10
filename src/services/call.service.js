@@ -17,6 +17,18 @@ const AgoraService = require("./agora.service");
 const { createKey, hSet, del, sAdd } = require("./redis.service");
 const { RtcRole } = require("agora-token");
 
+// Generate a numeric UID from a string by hashing (same as in agora.service.js)
+const generateNumericUid = (str) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  // Ensure positive number and limit to Agora's valid range (0-10000)
+  return Math.abs(hash) % 10000;
+};
+
 const callStatus = {
   INIT: "INIT",
   PENDING: "PENDING",
@@ -29,19 +41,19 @@ class CallService {
 
     if (!foundUser) throw new BadRequestError("You're not register");
 
-    if (foundUser.isCalling)
-      throw new ConflictError(
-        "You're in a call now, please end up the current call if you want to perform a new call"
-      );
+    // if (foundUser.isCalling)
+    //   throw new ConflictError(
+    //     "You're in a call now, please end up the current call if you want to perform a new call"
+    //   );
 
     const foundConservation = await ConservationRepository.getConservationById(conservationId);
 
     if (!foundConservation) throw new BadRequestError("Conservation not found");
 
-    if (foundConservation.isCalling)
-      throw new ConflictError(
-        "Your conservation are in a call now, please end up the current call if you want to perform a new call"
-      );
+    // if (foundConservation.isCalling)
+    //   throw new ConflictError(
+    //     "Your conservation are in a call now, please end up the current call if you want to perform a new call"
+    //   );
 
     const createdCall = await CallModel.create({
       beginAt: Date.now(),
@@ -58,11 +70,12 @@ class CallService {
     const channelName = `channel-${foundConservation._id.toString()}`;
     const rtcTokenUid = uuid();
     const rtmTokenUid = uuid();
+    const numericRtcUid = generateNumericUid(rtcTokenUid);
 
     const rtcToken = AgoraService.generateAgoraRTCToken({
       channelName,
       role: RtcRole.PUBLISHER,
-      uid: rtcTokenUid,
+      uid: numericRtcUid,
       expiredTimestampInSeconds: 3600,
     });
 
@@ -83,7 +96,7 @@ class CallService {
       channel: channelName,
       rtcToken: rtcToken,
       rtmToken: rtmToken,
-      rtcUid: rtcTokenUid,
+      rtcUid: numericRtcUid,
       rtmUid: rtmTokenUid,
     };
   };
@@ -113,11 +126,12 @@ class CallService {
     const channelName = `channel-${foundCall.conservation.toString()}`;
     const rtcTokenUid = uuid();
     const rtmTokenUid = uuid();
+    const numericRtcUid = generateNumericUid(rtcTokenUid);
 
     const rtcToken = AgoraService.generateAgoraRTCToken({
       channelName,
       role: RtcRole.PUBLISHER,
-      uid: rtcTokenUid,
+      uid: numericRtcUid,
       expiredTimestampInSeconds: 3600,
     });
 
@@ -133,7 +147,7 @@ class CallService {
       channel: channelName,
       rtcToken,
       rtmToken,
-      rtcUid: rtcTokenUid,
+      rtcUid: numericRtcUid,
       rtmUid: rtmTokenUid,
     };
   };
@@ -168,7 +182,7 @@ class CallService {
     if (!updatedCall)
       throw new InternalServerError("Some thing went wrong, please try again later");
 
-    await UserRepository.updateUserById({ userId: joinerId, update: { isCalling: false } });
+    await UserRepository.updateUserById({ userId: ender, update: { isCalling: false } });
 
     await ConservationRepository.updateConservationById({
       conservationId: foundCall.conservation.toString(),
@@ -178,6 +192,26 @@ class CallService {
     await del(createKey({ modelName: "calls", id: callId }));
 
     return updatedCall;
+  };
+
+  static getCallInfo = async ({ callId }) => {
+    const foundCall = await CallRepository.getByIdAndPopulate({
+      id: callId,
+      populate: [
+        { path: "caller", select: "_id userName email photo" },
+        { path: "attendances", select: "_id userName email photo" },
+        { path: "conservation", select: "_id name type" },
+      ],
+    });
+
+    if (!foundCall) throw new NotFoundError("Call not found");
+
+    const channelName = `channel-${foundCall.conservation._id.toString()}`;
+
+    return {
+      call: foundCall,
+      channel: channelName,
+    };
   };
 }
 

@@ -11,5 +11,6 @@ callRouter.use(authentication);
 callRouter.post("/", asyncHandler(CallController.initCall));
 callRouter.post("/join/:callId", asyncHandler(CallController.joinCall));
 callRouter.post("/end/:callId", asyncHandler(CallController.endCall));
+callRouter.get("/:callId", asyncHandler(CallController.getCallInfo));
 
 module.exports = callRouter;

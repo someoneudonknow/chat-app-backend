@@ -24,11 +24,19 @@ const AUDIO_MESSAGE_DOCUMENT_NAME = "AudioMessage";
 const VIDEO_MESSAGE_COLLECTION_NAME = "VideoMessages";
 const VIDEO_MESSAGE_DOCUMENT_NAME = "VideoMessage";
 
+const AI_MESSAGE_COLLECTION_NAME = "AIMessages";
+const AI_MESSAGE_DOCUMENT_NAME = "AIMessage";
+
 const MessageSchema = new mongoose.Schema(
   {
     sender: {
       type: mongoose.Types.ObjectId,
       ref: "User",
+    },
+    // don't need to fetch the user info if isBot = true
+    isBot: {
+      type: Boolean,
+      default: false,
     },
     conservation: {
       type: mongoose.Types.ObjectId,
@@ -192,6 +200,20 @@ const VideoMessageSchema = new mongoose.Schema(
   { collection: VIDEO_MESSAGE_COLLECTION_NAME }
 );
 
+const AIMessageSchema = new mongoose.Schema(
+  {
+    type: {
+      type: String,
+      enum: ["chat"],
+    },
+    response: {
+      type: String,
+      required: true,
+    },
+  },
+  { collection: AI_MESSAGE_COLLECTION_NAME }
+);
+
 const MessageModel = mongoose.model(MESSAGE_DOCUMENT_NAME, MessageSchema);
 const TextMessageModel = mongoose.model(TEXT_MESSAGE_DOCUMENT_NAME, TextMessageSchema);
 const GifMessageModel = mongoose.model(GIF_MESSAGE_DOCUMENT_NAME, GifMessageSchema);
@@ -199,6 +221,7 @@ const FileMessageModel = mongoose.model(FILE_MESSAGE_DOCUMENT_NAME, FileMessageS
 const ImageMessageModel = mongoose.model(IMAGE_MESSAGE_DOCUMENT_NAME, ImageMessageSchema);
 const AudioMessageModel = mongoose.model(AUDIO_MESSAGE_DOCUMENT_NAME, AudioMessageSchema);
 const VideoMessageModel = mongoose.model(VIDEO_MESSAGE_DOCUMENT_NAME, VideoMessageSchema);
+const AIMessageModel = mongoose.model(AI_MESSAGE_DOCUMENT_NAME, AIMessageSchema);
 
 module.exports = {
   MessageModel,
@@ -208,4 +231,5 @@ module.exports = {
   AudioMessageModel,
   ImageMessageModel,
   VideoMessageModel,
+  AIMessageModel,
 };

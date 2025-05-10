@@ -4,6 +4,11 @@ const devConfig = {
   app: {
     port: process.env.DEV_APP_PORT || 8080,
   },
+  services: {
+    ai: {
+      baseUrl: process.env.DEV_AI_SERVICE_BASE_URL || "http://localhost:8080",
+    },
+  },
   db: {
     port: process.env.DEV_DB_PORT || 27017,
     host: process.env.DEV_DB_HOST || "localhost",

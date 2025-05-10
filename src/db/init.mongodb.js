@@ -20,6 +20,8 @@ class Database {
       mongoose
         .connect(CONNECTION_STRING, {
           maxPoolSize: 50,
+          // user: "root",
+          // pass: "root"
         })
         .then(() => {
           console.log("Connected to database::" + CONNECTION_STRING);

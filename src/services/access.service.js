@@ -62,7 +62,13 @@ class AccessService {
   };
 
   static login = async ({ email, password, refreshToken = null }) => {
-    const userFound = await UserService.findByEmail(email);
+    console.log("Login service called");
+    let userFound = null;
+    try {
+      userFound = await UserService.findByEmail(email);
+    } catch(err) {
+      console.error(err)
+    }
 
     if (!userFound) throw new BadRequestError("User is not registered");
 

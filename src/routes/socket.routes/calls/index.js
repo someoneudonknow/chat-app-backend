@@ -8,6 +8,7 @@ const eventNames = {
   CALL_REJECT: "calls/rejected",
   SETUP_CALL: "calls/setup",
   LEAVE_CALL: "calls/leave",
+  GET_PARTICIPANTS: "calls/get-participants",
 };
 
 module.exports = (socket) => {
@@ -18,4 +19,8 @@ module.exports = (socket) => {
   );
   socket.on(eventNames.SETUP_CALL, socketErrorHandler.call(socket, socketController.onCallSetup));
   socket.on(eventNames.LEAVE_CALL, socketErrorHandler.call(socket, socketController.onLeaveCall));
+  socket.on(
+    eventNames.GET_PARTICIPANTS,
+    socketErrorHandler.call(socket, socketController.getCallParticipants)
+  );
 };

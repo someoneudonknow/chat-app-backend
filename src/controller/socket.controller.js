@@ -9,6 +9,7 @@ class SocketController {
   onCreateCall = SocketService.onCreateCall;
   onCallRejected = SocketService.onCallRejected;
   onCallSetup = SocketService.setUpCall;
+  getCallParticipants = SocketService.getCallParticipants;
 }
 
 module.exports = new SocketController();

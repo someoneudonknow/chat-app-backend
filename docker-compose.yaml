@@ -1,0 +1,41 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=chat-app-dev
+    restart: unless-stopped
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    environment:
+      - REDIS_PASSWORD=root
+    command: redis-server --requirepass root
+    restart: unless-stopped
+  
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    restart: always
+    ports:
+      - "28081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+      ME_CONFIG_MONGODB_URL: mongodb://admin:admin@mongodb:27017/ 
+    depends_on:
+      - mongodb
+
+volumes:
+  mongodb_data:
+  redis_data:

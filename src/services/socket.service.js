@@ -1,6 +1,6 @@
 "use strict";
 
-const { BadRequestError } = require("../core/error.response");
+const { BadRequestError, NotFoundError } = require("../core/error.response");
 const CallRepository = require("../models/repositories/call.repository");
 const ConservationRepository = require("../models/repositories/conservation.repository");
 const UserRepository = require("../models/repositories/user.repository");
@@ -47,14 +47,26 @@ class SocketService {
     channelName,
     mediaType,
   }) {
+    console.log("onCreateCall received:", {
+      callerId,
+      conservationId,
+      from,
+      avatar,
+      callId,
+      channelName,
+      mediaType,
+    });
+
     const foundConservation = await ConservationRepository.getConservationById(conservationId);
 
     if (!foundConservation) throw new NotFoundError("Conservation not found");
 
     const conservationMembers = foundConservation.members.map((cm) => cm.user.toString());
+    console.log("Conservation members:", conservationMembers);
 
     conservationMembers.forEach((uid) => {
       if (uid !== callerId) {
+        console.log(`Emitting ${eventName.NEW_CALL} to user ${uid}`);
         global._io.to(uid).emit(eventName.NEW_CALL, {
           callerId,
           conservationId,
@@ -111,6 +123,28 @@ class SocketService {
     };
 
     this.to(callId).emit(eventName.CALL_REJECTED, { user: userData });
+  };
+
+  static getCallParticipants = async function ({ callId }, callback) {
+    try {
+      if (!callId) throw new Error("Call id is required");
+
+      const participants = await sMembers(createKey({ modelName: "calls", id: callId }));
+
+      if (!participants || participants.length === 0) {
+        const call = await CallRepository.getById(callId);
+        if (call && call.attendances) {
+          const attendances = call.attendances.map((id) => id.toString());
+          callback(attendances);
+          return;
+        }
+      }
+
+      callback(participants);
+    } catch (error) {
+      console.error("Error getting call participants:", error);
+      callback([]);
+    }
   };
 }
 

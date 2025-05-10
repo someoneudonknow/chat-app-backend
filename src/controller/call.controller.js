@@ -23,9 +23,18 @@ class CallController {
 
   endCall = async (req, res, next) => {
     new SuccessResponse({
-      message: "Join call successfully",
+      message: "End call successfully",
       metadata: await CallService.endCall({
         ender: req.user.userId,
+        callId: req.params.callId,
+      }),
+    }).send(res);
+  };
+
+  getCallInfo = async (req, res, next) => {
+    new SuccessResponse({
+      message: "Get call info successfully",
+      metadata: await CallService.getCallInfo({
         callId: req.params.callId,
       }),
     }).send(res);

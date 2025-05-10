@@ -21,6 +21,8 @@ const {
 } = require("../models/message.model");
 const UserRepository = require("../models/repositories/user.repository");
 const { Types } = require("mongoose");
+// Comment out the import to break the circular dependency
+// const ConservationAssistant = require("./aiAssistant/conservation.assistant");
 /*
  1- get all message from conservation --done
  2- search for messages --done
@@ -193,7 +195,7 @@ class MessageService {
   static createMessage = async ({ userId, body }) => {
     const foundUser = await UserRepository.getUserById(userId);
 
-    if (!foundUser) throw new BadRequestError("You're not registered");
+    if (!foundUser && !body.isBot) throw new BadRequestError("You're not registered");
 
     const { mentionedMembers = [], replyTo, type, conservation } = body;
 
@@ -225,12 +227,24 @@ class MessageService {
       if (isMentionedSelf) throw new BadRequestError("Can't mention to yourself");
     }
 
-    const insertedMessage = await MessageFactory.createMessage(type, { ...body, sender: userId });
+    const insertedMessage = await MessageFactory.createMessage(type, {
+      ...body,
+      sender: body?.isBot ? "ai" : userId,
+    });
 
-    const newMessage = {
+    let newMessage = {
       ...insertedMessage.toObject(),
-      sender: pickDataInfo(["photo", "userName", "email", "country", "_id"], foundUser.toObject()),
     };
+
+    if (!body.isBot) {
+      newMessage = {
+        ...newMessage,
+        sender: pickDataInfo(
+          ["photo", "userName", "email", "country", "_id"],
+          foundUser.toObject()
+        ),
+      };
+    }
 
     await ConservationRepository.updateConservationById({
       conservationId: insertedMessage.conservation.toString(),
@@ -251,6 +265,20 @@ class MessageService {
           },
         ]);
       });
+
+    if (type === messageTypes.TEXT && !body.isBot) {
+      try {
+        if (global._internalEvents) {
+          global._internalEvents.emit("process:ai:message", {
+            message: newMessage,
+            conservationId: conservation,
+          });
+          console.log("Emitted AI message processing event");
+        }
+      } catch (error) {
+        console.error("Error initiating AI Assistant:", error);
+      }
+    }
 
     return newMessage;
   };

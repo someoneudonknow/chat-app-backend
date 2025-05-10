@@ -3,7 +3,7 @@
 const redis = require("redis");
 const { RedisError } = require("../core/error.response");
 const {
-  redis: { port, host, password, username },
+  redis: { port, host },
 } = require("../config/config.app");
 
 const connectionStatus = {
@@ -12,7 +12,7 @@ const connectionStatus = {
   RECONNECT: "reconnecting",
   ERROR: "error",
 };
-const REDIS_CONNECT_TIMEOUT = 10000; // 10 milliseconds
+const REDIS_CONNECT_TIMEOUT = 10_000; // 10 milliseconds
 const REDIS_CONNECT_TIMEOUT_MESSAGE = {
   code: -99,
   message: {
@@ -23,18 +23,18 @@ const REDIS_CONNECT_TIMEOUT_MESSAGE = {
 
 class RedisClient {
   redisClientInstance = null;
+  MAX_RETRIES = 5;
   #connectTimeout = null;
 
   constructor() {}
 
   init() {
     this.redisClientInstance = redis.createClient({
-      // password: password,
       socket: {
         host: host,
         port: port,
         reconnectStrategy: function (retries) {
-          if (retries > 20) {
+          if (retries > MAX_RETRIES) {
             console.log("Too many attempts to reconnect. Redis connection was terminated");
             return new Error("Too many retries.");
           } else {
