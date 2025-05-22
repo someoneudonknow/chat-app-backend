@@ -41,14 +41,8 @@ class AIService {
         conversationId: data?.conversation_id,
       };
     } catch (error) {
-      console.error("AI chat error:", error);
       return { reply: "Sorry, I'm having trouble responding right now." };
     }
-  };
-
-  static translate = async ({ content, lang }) => {
-    // Implementation for translation
-    return {};
   };
 }
 

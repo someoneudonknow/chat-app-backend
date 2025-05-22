@@ -24,6 +24,8 @@ const devConfig = {
   agora: {
     app_id: process.env.AGORA_APP_ID,
     app_cerf: process.env.AGORA_APP_CERF,
+    customer_id: process.env.AGORA_CUSTOMER_ID,
+    customer_secret: process.env.AGORA_CUSTOMER_SECRET,
   },
   mail: {
     service: process.env.DEV_MAIL_SERVICE || "mail",
@@ -35,6 +37,14 @@ const devConfig = {
     host: process.env.DEV_REDIS_HOST || "localhost",
     password: process.env.DEV_REDIS_PASSWORD || "root",
     username: process.env.DEV_REDIS_USER || "root",
+  },
+  aws: {
+    s3: {
+      accessKey: process.env.S3_ACCESS_KEY,
+      secretKey: process.env.S3_SECRET,
+      region: process.env.S3_REGION,
+      bucket: process.env.S3_BUCKET_NAME,
+    },
   },
 };
 
@@ -62,12 +72,22 @@ const prodConfig = {
   agora: {
     app_id: process.env.AGORA_APP_ID,
     app_cerf: process.env.AGORA_APP_CERF,
+    customer_id: process.env.AGORA_CUSTOMER_ID,
+    customer_secret: process.env.AGORA_CUSTOMER_SECRET,
   },
   redis: {
     port: process.env.PROD_REDIS_PORT || 6379,
     host: process.env.PROD_REDIS_HOST || "localhost",
     password: process.env.PROD_REDIS_PASSWORD || "root",
     username: process.env.PROD_REDIS_USER || "root",
+  },
+  aws: {
+    s3: {
+      accessKey: process.env.S3_ACCESS_KEY,
+      secretKey: process.env.S3_SECRET,
+      region: process.env.S3_REGION,
+      bucket: process.env.S3_BUCKET_NAME,
+    },
   },
 };
 

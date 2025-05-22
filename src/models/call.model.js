@@ -48,6 +48,42 @@ const callSchema = new mongoose.Schema(
         values: ["INIT", "PENDING", "ENDED"],
       },
     },
+    isRecording: {
+      type: Boolean,
+      default: false,
+    },
+    isRecordingPaused: {
+      type: Boolean,
+      default: false,
+    },
+    recordingStopped: {
+      type: Boolean,
+      default: false,
+    },
+    recordingData: {
+      type: Object,
+      default: null,
+    },
+    recordingFiles: {
+      type: Array,
+      default: [],
+    },
+    recordingS3Urls: {
+      type: Array,
+      default: [],
+    },
+    recordingStartedAt: {
+      type: Date,
+    },
+    recordingPausedAt: {
+      type: Date,
+    },
+    recordingResumedAt: {
+      type: Date,
+    },
+    recordingStoppedAt: {
+      type: Date,
+    },
   },
   {
     collection: COLLECTTION_NAME,

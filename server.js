@@ -66,6 +66,7 @@ process.on("SIGINT", () => {
 
   serverInstance.close(() => {
     console.log("Server closed");
+    process.exit(1);
   });
 });
 

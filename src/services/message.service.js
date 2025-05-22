@@ -18,21 +18,10 @@ const {
   ImageMessageModel,
   AudioMessageModel,
   VideoMessageModel,
+  CallMessageModel,
 } = require("../models/message.model");
 const UserRepository = require("../models/repositories/user.repository");
-const { Types } = require("mongoose");
-// Comment out the import to break the circular dependency
-// const ConservationAssistant = require("./aiAssistant/conservation.assistant");
-/*
- 1- get all message from conservation --done
- 2- search for messages --done
- 3- soft delete messages --done
- 4- create new message --done
- 5- hard delete messages --done
- 6- filter messages --done
- 8- pin message --done
- 9- update message --done
- */
+
 const messageTypes = {
   TEXT: "text",
   GIF: "gif",
@@ -42,7 +31,26 @@ const messageTypes = {
   VIDEO: "video",
   CONSULT: "consult",
   LOCATION: "location",
+  CALL: "call",
 };
+
+// MessageFactory implementation
+class MessageFactory {
+  static messageRegistry = {};
+
+  static registerMessage(type, MessageClass) {
+    this.messageRegistry[type] = MessageClass;
+  }
+
+  static createMessage(type, data) {
+    const MessageClass = this.messageRegistry[type];
+    if (!MessageClass) {
+      throw new NotImplementedError(`Message type ${type} is not supported`);
+    }
+    const message = new MessageClass(data);
+    return message.create();
+  }
+}
 
 class Message {
   constructor({
@@ -163,20 +171,19 @@ class VideoMessage extends Message {
   }
 }
 
-class MessageFactory {
-  static registeredMessage = {};
+class CallMessage extends Message {
+  async create() {
+    const createdCallMessage = await CallMessageModel.create({
+      ...this.content,
+      sender: this.sender,
+    });
+    if (!createdCallMessage) throw new InternalError("Something went wrong while creating");
 
-  static registerMessage = async (type, model) => {
-    MessageFactory.registeredMessage[type] = model;
-  };
+    const createdMessage = await super.createMessage(createdCallMessage._id);
+    if (!createdMessage) throw new InternalError("Something went wrong while creating");
 
-  static createMessage = async (type, body) => {
-    const referMessageClass = MessageFactory.registeredMessage[type];
-
-    if (!referMessageClass) throw new NotImplementedError("Message type not valid");
-
-    return new referMessageClass(body).create();
-  };
+    return createdMessage;
+  }
 }
 
 MessageFactory.registerMessage(messageTypes.TEXT, TextMessage);
@@ -185,6 +192,7 @@ MessageFactory.registerMessage(messageTypes.FILE, FileMessage);
 MessageFactory.registerMessage(messageTypes.IMAGE, ImageMessage);
 MessageFactory.registerMessage(messageTypes.AUDIO, AudioMessage);
 MessageFactory.registerMessage(messageTypes.VIDEO, VideoMessage);
+MessageFactory.registerMessage(messageTypes.CALL, CallMessage);
 
 const eventNames = {
   NEW_MESSAGE: "messages/new",

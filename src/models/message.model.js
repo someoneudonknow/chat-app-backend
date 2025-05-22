@@ -27,13 +27,15 @@ const VIDEO_MESSAGE_DOCUMENT_NAME = "VideoMessage";
 const AI_MESSAGE_COLLECTION_NAME = "AIMessages";
 const AI_MESSAGE_DOCUMENT_NAME = "AIMessage";
 
+const CALL_MESSAGE_COLLECTION_NAME = "CallMessages";
+const CALL_MESSAGE_DOCUMENT_NAME = "CallMessage";
+
 const MessageSchema = new mongoose.Schema(
   {
     sender: {
       type: mongoose.Types.ObjectId,
       ref: "User",
     },
-    // don't need to fetch the user info if isBot = true
     isBot: {
       type: Boolean,
       default: false,
@@ -44,7 +46,7 @@ const MessageSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["text", "gif", "file", "image", "audio", "video", "consult", "location"],
+      enum: ["text", "gif", "file", "image", "audio", "video", "consult", "location", "call"],
       default: "text",
       index: true,
     },
@@ -214,6 +216,47 @@ const AIMessageSchema = new mongoose.Schema(
   { collection: AI_MESSAGE_COLLECTION_NAME }
 );
 
+const CallMessageSchema = new mongoose.Schema(
+  {
+    duration: {
+      type: Number,
+    },
+    callStartedAt: {
+      type: Date,
+    },
+    callEndedAt: {
+      type: Date,
+    },
+    callType: {
+      type: String,
+      enum: ["audio", "video"],
+    },
+    isRecorded: {
+      type: Boolean,
+      default: false,
+    },
+    summary: {
+      type: String,
+    },
+    sender: {
+      type: mongoose.Types.ObjectId,
+      ref: "User",
+    },
+    participants: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    recordingUrls: [String],
+    callId: {
+      type: mongoose.Types.ObjectId,
+      ref: "Call",
+    },
+  },
+  { collection: CALL_MESSAGE_COLLECTION_NAME }
+);
+
 const MessageModel = mongoose.model(MESSAGE_DOCUMENT_NAME, MessageSchema);
 const TextMessageModel = mongoose.model(TEXT_MESSAGE_DOCUMENT_NAME, TextMessageSchema);
 const GifMessageModel = mongoose.model(GIF_MESSAGE_DOCUMENT_NAME, GifMessageSchema);
@@ -222,6 +265,7 @@ const ImageMessageModel = mongoose.model(IMAGE_MESSAGE_DOCUMENT_NAME, ImageMessa
 const AudioMessageModel = mongoose.model(AUDIO_MESSAGE_DOCUMENT_NAME, AudioMessageSchema);
 const VideoMessageModel = mongoose.model(VIDEO_MESSAGE_DOCUMENT_NAME, VideoMessageSchema);
 const AIMessageModel = mongoose.model(AI_MESSAGE_DOCUMENT_NAME, AIMessageSchema);
+const CallMessageModel = mongoose.model(CALL_MESSAGE_DOCUMENT_NAME, CallMessageSchema);
 
 module.exports = {
   MessageModel,
@@ -232,4 +276,5 @@ module.exports = {
   ImageMessageModel,
   VideoMessageModel,
   AIMessageModel,
+  CallMessageModel,
 };
