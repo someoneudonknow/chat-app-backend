@@ -762,7 +762,8 @@ class CallService {
 
     await del(createKey({ modelName: "calls", id: callId }));
 
-    // Create call message
+    new Promise((resolve, reject) => {});
+
     await CallService.createCallMessage({ call: updatedCall });
 
     return updatedCall;
@@ -770,10 +771,8 @@ class CallService {
 
   static createCallMessage = async ({ call }) => {
     try {
-      // Calculate call duration in seconds
       const duration = call.endAt ? Math.round((call.endAt - call.beginAt) / 1000) : 0;
 
-      // Get participants
       const participants = call.attendances ? call.attendances.map((id) => id.toString()) : [];
 
       console.log("Call data for message:", {
@@ -788,7 +787,6 @@ class CallService {
         recordingUrls: (call.recordingS3Urls || []).length,
       });
 
-      // Create message data
       const messageData = {
         sender: call.caller,
         conservation: call.conservation,
@@ -799,7 +797,7 @@ class CallService {
           callEndedAt: call.endAt,
           callType: call.mediaType === "AUDIO_CALL" ? "audio" : "video",
           isRecorded: call.recordingStopped || false,
-          summary: null, // Sẽ được cập nhật sau khi có tóm tắt
+          summary: null,
           participants: participants,
           callId: call._id,
           recordingUrls: call.recordingS3Urls || [],
@@ -808,7 +806,6 @@ class CallService {
 
       console.log("Creating call message with data:", JSON.stringify(messageData, null, 2));
 
-      // Use MessageService to create the message
       const MessageService = require("./message.service");
       const createdMessage = await MessageService.createMessage({
         userId: call.caller.toString(),
@@ -817,7 +814,6 @@ class CallService {
 
       console.log("Call message created successfully with ID:", createdMessage?._id);
 
-      // Emit a direct event to notify clients about the new call message
       if (global._io) {
         global._io.to(call.conservation.toString()).emit("call:ended", {
           messageId: createdMessage?._id,
@@ -828,7 +824,6 @@ class CallService {
       return createdMessage;
     } catch (error) {
       console.error("Error creating call message:", error);
-      // Don't throw error to avoid affecting the call end process
       return null;
     }
   };

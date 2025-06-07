@@ -84,6 +84,9 @@ const callSchema = new mongoose.Schema(
     recordingStoppedAt: {
       type: Date,
     },
+    recordingSummary: {
+      type: String,
+    },
   },
   {
     collection: COLLECTTION_NAME,

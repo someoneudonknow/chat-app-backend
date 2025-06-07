@@ -17,9 +17,7 @@ services:
       - "6380:6379"
     volumes:
       - redis_data:/data
-    environment:
-      - REDIS_PASSWORD=root
-    command: redis-server --requirepass root
+    command: redis-server
     restart: unless-stopped
   
   mongo-express:
