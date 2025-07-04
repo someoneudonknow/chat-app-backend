@@ -19,7 +19,7 @@ const app = express();
 // init middlewares
 app.use(
   cors({
-    origin,
+    origin: "*",
   })
 );
 app.use(morgan("dev"));
